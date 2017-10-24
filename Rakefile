@@ -1,5 +1,5 @@
 # Note this is used in the apply stage and is outputted by the plan stage
-BUILD_ARTIFACT_NAME = 'tfplan'
+BUILD_ARTIFACT_NAME = 'aws_demo.plan'
 LOCAL_WORKSPACE = 'local'
 SOURCE = 'src'
 S3_BUCKET = 'demolambdas'
