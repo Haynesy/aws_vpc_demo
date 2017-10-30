@@ -1,7 +1,42 @@
-const handler = (event, context) {
+const axios = require('axios');
 
-    console.log("It works!", event);
-    context.succeed("Oh yay!");
+const url = "https://www.google.com";
+
+const handleError = error => {
+    if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.log(error.response.data);
+        console.log(error.response.status);
+        console.log(error.response.headers);
+    } else if (error.request) {
+        // The request was made but no response was received
+        // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+        // http.ClientRequest in node.js
+        console.log(error.request);
+    } else {
+        // Something happened in setting up the request that triggered an Error
+        console.log('Error', error.message);
+    }
+}
+
+const handler = (event, context, callback) => {
+    axios.get(url)
+        .then(response => {
+            console.log('Success');
+            callback(null, "Ok");   
+        })
+        .catch(error =>{
+            handleError(error);
+            callback(error);
+        });
+}
+
+const test = () => {
+    handler({}, {}, () => {
+        console.log('Callback run!');
+    });
 }
 
 exports.handler = handler;
+exports.test = test;

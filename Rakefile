@@ -4,46 +4,33 @@ LOCAL_WORKSPACE = 'local'
 SOURCE = 'src'
 S3_BUCKET = 'demolambdas'
 LAMBDA_ZIP = 'lambda.zip'
-REGION = 'ap-southeast-1'
+AWS_REGION = 'ap-southeast-1'
+ENVIRONMENT = "aws_demo"
+ENV_VARIABLES = %[-var "environment=\"#{ENVIRONMENT}\"" -var "aws_region=\"#{AWS_REGION}\"" -var "lambda_zip_filename=\"#{LAMBDA_ZIP}\"" -var "lambda_zip_bucket=\"#{S3_BUCKET}\""]
 
-desc 'Build'
-task :build do
-    zip_source(LAMBDA_ZIP)
-
-    # run "aws s3 mb s3://#{S3_BUCKET}"
-    push_to_s3(LAMBDA_ZIP)
-end
-
-desc 'Terraform plan'
-task :plan do
-    run "terraform init -input=false"
-    run "terraform plan -out=#{BUILD_ARTIFACT_NAME} -input=false"
-end
-
-desc 'Terraform apply'
-task :apply do
-    run "terraform apply -input=false #{BUILD_ARTIFACT_NAME}"
-end
-
-desc 'Terraform destroy'
+desc 'Destroy VPC (note this will force destroy everything)'
 task :destroy do
-    run "terraform destroy"
+    run "terraform destroy #{ENV_VARIABLES} -force"
 end
 
 desc 'Run the pipeline'
 task :default do
-    Rake::Task['build'].invoke;
-    Rake::Task['plan'].invoke;
-    Rake::Task['apply'].invoke;
+    test_source()
+    create_bucket()
+    
+    zip_source(LAMBDA_ZIP)
+    push_to_s3(LAMBDA_ZIP)
+
+    run "terraform init -input=false"
+    run "terraform plan -out=#{BUILD_ARTIFACT_NAME} -input=false #{ENV_VARIABLES}"
+    run "terraform apply -input=false #{BUILD_ARTIFACT_NAME}"
+end
+
+task :test do
+    zip_source(LAMBDA_ZIP)
 end
 
 # Helper methods
-def run(command)
-    puts "=> #{command}"
-
-    fail "Oh snap!" if !system command
-end
-
 def zip_source(filename)
     run "7z a #{filename} #{SOURCE}"
 end
@@ -51,5 +38,18 @@ end
 def push_to_s3(filename)
     puts "S3: Uploading file #{filename} to s3://#{S3_BUCKET}/#{filename}"
     run "aws s3 cp #{filename} s3://#{S3_BUCKET}/#{filename}"
+end
 
+def test_source 
+    run "node src"
+    #TODO Run test suit
+end
+
+def create_bucket()
+    # run "aws s3 mb s3://#{S3_BUCKET}"
+end
+
+def run(command)
+    puts "=> #{command}"
+    fail "Oh snap!" if !system command
 end

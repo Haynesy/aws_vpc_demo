@@ -3,3 +3,7 @@
 *.plan
 
 .terraform/
+*.tfstate*
+*.tfstate
+*.plan
+node_modules/
