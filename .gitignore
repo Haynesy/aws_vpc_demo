@@ -7,3 +7,5 @@
 *.tfstate
 *.plan
 node_modules/
+
+lambda.zip

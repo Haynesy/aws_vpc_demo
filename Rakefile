@@ -13,8 +13,8 @@ task :destroy do
     run "terraform destroy #{ENV_VARIABLES} -force"
 end
 
-desc 'Run the pipeline'
-task :default do
+desc 'Build and Deploy (Assumes you have credentials setup on your machine)'
+task :create do
     test_source()
     create_bucket()
     
@@ -46,7 +46,7 @@ def test_source
 end
 
 def create_bucket()
-    # run "aws s3 mb s3://#{S3_BUCKET}"
+    run "aws s3 mb s3://#{S3_BUCKET}"
 end
 
 def run(command)
