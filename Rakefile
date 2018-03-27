@@ -2,7 +2,7 @@
 BUILD_ARTIFACT_NAME = 'aws_demo.plan'
 LOCAL_WORKSPACE = 'local'
 SOURCE = 'src'
-S3_BUCKET = 'demolambdas'
+S3_BUCKET = 'vpc-demo-lambda-bucket'
 LAMBDA_ZIP = 'lambda.zip'
 AWS_REGION = 'ap-southeast-1'
 ENVIRONMENT = "aws_demo"
@@ -13,7 +13,7 @@ task :destroy do
     run "terraform destroy #{ENV_VARIABLES} -force"
 end
 
-desc 'Build and Deploy (Assumes you have credentials setup on your machine)'
+desc 'Build and Deploy (Should have AWS Credentials on your machine)'
 task :create do
     test_source()
     create_bucket()
@@ -41,12 +41,14 @@ def push_to_s3(filename)
 end
 
 def test_source 
-    run "node src"
+    run "node src" # Just testing that it compiles for the moment
+
     #TODO Run test suit
 end
 
 def create_bucket()
-    run "aws s3 mb s3://#{S3_BUCKET}"
+    # TODO Query to see if bucket already exists
+    system "aws s3 mb s3://#{S3_BUCKET} --region #{AWS_REGION}"
 end
 
 def run(command)
