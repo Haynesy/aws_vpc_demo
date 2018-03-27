@@ -10,11 +10,22 @@ resource "aws_security_group" "lambda" {
     }
 }
 
+// Allow external calls using HTTPS
 resource "aws_security_group_rule" "lambda_out_https" {
     security_group_id = "${aws_security_group.lambda.id}"
     type = "egress"
     from_port = 443
     to_port = 443
+    protocol  = "tcp"
+    cidr_blocks   = ["0.0.0.0/0"]
+}
+
+// Allow external calls using HTTP
+resource "aws_security_group_rule" "lambda_out_http" {
+    security_group_id = "${aws_security_group.lambda.id}"
+    type = "egress"
+    from_port = 80
+    to_port = 80
     protocol  = "tcp"
     cidr_blocks   = ["0.0.0.0/0"]
 }
@@ -40,7 +51,7 @@ resource "aws_iam_role" "iam_for_lambda" {
 EOF
 }
 
-
+// Base Policy with permissions for a lambda role
 resource "aws_iam_role_policy" "iam_role_policy_for_lambda" {
   name = "${format("lambda_policy_%s", "test_lambda-${var.environment}")}"
   role = "${aws_iam_role.iam_for_lambda.id}"
@@ -69,6 +80,7 @@ resource "aws_iam_role_policy" "iam_role_policy_for_lambda" {
 POLICY
 }
 
+// Create the actual lambda
 resource "aws_lambda_function" "test_lambda" {
   s3_key            = "${var.lambda_zip_filename}"
   s3_bucket         = "${var.lambda_zip_bucket}"
